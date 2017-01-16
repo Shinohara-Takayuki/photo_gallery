@@ -1,0 +1,18 @@
+<p>You are logged in as {{ user.username }}</p>
+<table>
+<tr>
+    <td>{{ user.first_name }}</td>
+    <td>{{ user.last_name }}</td>
+</tr>
+<tr>
+    <td>{{ user.email }}</td>
+</tr>
+</table>
+<form method="post" action="{% url 'logout' %}">
+ {% csrf_token %}
+<input type="submit" value="Logout" />
+</form>
+<p><a href="{% url 'upload_image' %}">Go to image uploading</a></p>
+{% for image_model in user.ImageModel_set.all %}
+	<p><img src="{{ image_model.image.url }}" /></p>
+{% endfor %}
