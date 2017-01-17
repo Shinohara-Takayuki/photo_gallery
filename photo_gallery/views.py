@@ -10,6 +10,12 @@ from photo_gallery.models import ImageModel, ImageUploadForm
 def mystub(request):
 	return HttpResponse("Hello world")
 	
+def home(request):
+	if request.user.is_authenticated():
+		return HttpResponseRedirect(reverse('profile', kwargs={'id': request.user.id}))
+	else:
+		return HttpResponseRedirect(reverse('login'))
+	
 def registration(request):
 	if request.method =='POST':
 		form = UserCreationForm(request.POST)
@@ -23,9 +29,12 @@ def registration(request):
 def registered(request):
 	return render(request, 'registration/registered.html')
 	
-def profile(request):
-	user = request.user
-	return render(request, 'registration/profile.html')
+def profile(request, id=0):
+	if id==0:
+		user = request.user
+	else:
+		user = User.objects.get(pk=id)
+	return render(request, 'registration/profile.html', {'user':user})
 
 def upload_image(request):
 	if request.method == 'POST' :
@@ -34,10 +43,14 @@ def upload_image(request):
 			image = form.save(commit=False)
 			image.user = User.objects.get(pk=int(request.user.id))
 			image.save()
-			return HttpResponseRedirect(reverse('profile'))
+			return HttpResponseRedirect(reverse('home'))
 		else:
 			return HttpResponse("Picture is not valid")
 	else:
 		form = ImageUploadForm()
 	return render(request, 'registration/upload_image.html', {'form': form})
+	
+def fullsize_image(request, imageid):
+	image_url = ImageModel.objects.get(pk=imageid).image.url
+	return render(request, 'registration/fullsize_image.html', {'image_url': image_url})
 	

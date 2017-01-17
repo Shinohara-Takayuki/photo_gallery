@@ -1,10 +1,14 @@
 <p>You are logged in as {{ user.username }}</p>
 <table>
 <tr>
+	<td>User name:</td>
     <td>{{ user.first_name }}</td>
+</tr><tr>
+	<td>User surname:</td>
     <td>{{ user.last_name }}</td>
 </tr>
 <tr>
+	<td>email:</td>
     <td>{{ user.email }}</td>
 </tr>
 </table>
@@ -13,6 +17,15 @@
 <input type="submit" value="Logout" />
 </form>
 <p><a href="{% url 'upload_image' %}">Go to image uploading</a></p>
+<table>
 {% for img in user.imagemodel_set.all %}
-	<p><img src="{{ img.image.url }}" /></p>
+	<tr>
+	<td>{{ img.upload_date }}</td>
+	<td>
+	<a href="{% url 'fullsize_image' img.id %}">
+	<img src="{{ img.icon.url }}" />
+	</a>
+	</td>
+	</tr>
 {% endfor %}
+</table>
