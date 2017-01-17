@@ -1,24 +1,43 @@
-<p>You are logged in as {{ user.username }}</p>
 <table>
 <tr>
-	<td>User name:</td>
-    <td>{{ user.first_name }}</td>
-</tr><tr>
-	<td>User surname:</td>
-    <td>{{ user.last_name }}</td>
-</tr>
-<tr>
-	<td>email:</td>
-    <td>{{ user.email }}</td>
-</tr>
-</table>
+<td><a href="{% url 'home' %}">You are logged in as {{ user.username }}</a></td>
+<td>
 <form method="post" action="{% url 'logout' %}">
  {% csrf_token %}
 <input type="submit" value="Logout" />
 </form>
+</td>
+</tr>
+</table>
+<h>Other users</h>
+<table>
+<tr>
+{% for usr in userlist %}
+	<td>
+		<a href="{% url 'profile' usr.id %}">{{ usr.username }}</a>
+	</td>
+{% endfor %}
+</tr>
+</table>
+<p/>
+<h>Currently You are viewing profile of {{ curruser.username }}</h>
+<table>
+<tr>
+	<td>User name:</td>
+    <td>{{ curruser.first_name }}</td>
+</tr><tr>
+	<td>User surname:</td>
+    <td>{{ curruser.last_name }}</td>
+</tr>
+<tr>
+	<td>email:</td>
+    <td>{{ curruser.email }}</td>
+</tr>
+</table>
+
 <p><a href="{% url 'upload_image' %}">Go to image uploading</a></p>
 <table>
-{% for img in user.imagemodel_set.all %}
+{% for img in curruser.imagemodel_set.all %}
 	<tr>
 	<td>{{ img.upload_date }}</td>
 	<td>
