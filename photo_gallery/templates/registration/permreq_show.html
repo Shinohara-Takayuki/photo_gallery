@@ -1,0 +1,26 @@
+<table>
+<tr>
+<td><a href="{% url 'home' %}">You are logged in as {{ user.username }}</a></td>
+<td>
+<form method="post" action="{% url 'logout' %}">
+ {% csrf_token %}
+<input type="submit" value="Logout" />
+</form>
+</table>
+<form method="post" action="{% url 'grant_perm' %}">
+{% csrf_token %}
+<table>
+{% for req in permrequests %}
+	<tr>
+	<td>{{ req.user.username }} requested access to </td>
+	<td>
+	<a href="{% url 'fullsize_image' req.image.id %}">
+	<img src="{{ req.image.icon.url }}" />
+	</a>
+	</td>
+	<td><input type="checkbox" name="granted_permission" value="{{ req.id }}"></td>
+	</tr>
+{% endfor %}
+</table>
+<input type="submit" value="Grant access" />
+</form>

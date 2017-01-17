@@ -5,6 +5,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.forms.models import modelform_factory
 from django.core.files.base import ContentFile 
+from guardian.shortcuts import assign_perm
+
 
 # Create your models here.
 
@@ -31,8 +33,18 @@ class ImageModel(models.Model):
 	
 	def save(self, *args, **kwargs):
 		super(ImageModel, self).save(*args, **kwargs)
+		assign_perm('view_image', self.user, self)
 		if not self.icon:
 			self.make_icon()
-					
-	
+			
+	class Meta:
+		permissions = (
+		("view_image", "View image"),
+		)
+
+class PermRequest(models.Model):
+	user = models.ForeignKey(User, on_delete=models.CASCADE)
+	image = models.ForeignKey(ImageModel, on_delete=models.CASCADE)
+	perm = models.CharField(max_length = 100)
+		
 ImageUploadForm = modelform_factory(ImageModel, fields=('image',))

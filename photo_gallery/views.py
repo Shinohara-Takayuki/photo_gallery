@@ -3,8 +3,9 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from photo_gallery.models import ImageModel, ImageUploadForm
+from photo_gallery.models import ImageModel, ImageUploadForm, PermRequest
 from django.contrib.auth.decorators import login_required
+from guardian.shortcuts import assign_perm
 
 # Create your views here.
 
@@ -38,8 +39,9 @@ def profile(request, id=0):
 	else:
 		curruser = User.objects.get(pk=id)
 	user = request.user
+	permrequest_count = PermRequest.objects.filter(image__user=user).count
 	userlist = User.objects.exclude(id=user.id).exclude(id=curruser.id)
-	return render(request, 'registration/profile.html', {'user':user, 'curruser':curruser, 'userlist':userlist})
+	return render(request, 'registration/profile.html', {'user':user, 'curruser':curruser, 'userlist':userlist, 'permrequest_count': permrequest_count})
 
 @login_required
 def upload_image(request):
@@ -58,6 +60,30 @@ def upload_image(request):
 	
 @login_required
 def fullsize_image(request, imageid):
-	image_url = ImageModel.objects.get(pk=imageid).image.url
-	return render(request, 'registration/fullsize_image.html', {'image_url': image_url})
+	if request.user.has_perm('view_image',ImageModel.objects.get(pk=imageid)):
+		image_url = ImageModel.objects.get(pk=imageid).image.url
+		return render(request, 'registration/fullsize_image.html', {'image_url': image_url})
+	else:
+		return render(request, 'registration/request_permissions.html', {'imageid': imageid})
+
+@login_required		
+def reg_perm_request(request):
+	if request.method == 'POST' :
+		permrequest = PermRequest(user = request.user, 
+						image = ImageModel.objects.get(pk=request.POST.get('imageid')),
+						perm = 'view_image')
+		permrequest.save()
+	return HttpResponseRedirect(reverse('home'))
 	
+def permreq_show(request):
+	permrequests = PermRequest.objects.filter(image__user=request.user)
+	return render(request, 'registration/permreq_show.html', {'permrequests': permrequests})
+
+def grant_perm(request)	:
+	if request.method == 'POST' :
+		perm_list = request.POST.getlist('granted_permission')
+		for perm_id in perm_list:
+			permreq = PermRequest.objects.get(pk=perm_id)
+			assign_perm(permreq.perm, permreq.user, permreq.image)
+			permreq.delete()
+	return HttpResponseRedirect(reverse('home'))
